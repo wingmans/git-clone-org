@@ -8,6 +8,16 @@
 
 version: 2
 
+project_name: git-clone-org
+
+env:
+  # https://goreleaser.com/customization/env/
+  # - REGISTRY=ghcr.io
+  - ORG=wingmans
+  - REPO=git-clone-org
+  - DESCRIPTION="tool to clone all repositories from a github user or organization"
+  - LICENSE=Apache-2.0
+
 before:
   hooks:
     # You may remove this if you don't use go modules.
@@ -53,3 +63,32 @@ changelog:
     exclude:
       - "^docs:"
       - "^test:"
+
+brews:
+  # https://goreleaser.com/customization/homebrew/
+  - name: policy
+
+    repository:
+      owner: "{{ .Env.ORG }}"
+      name: homebrew-tap
+      token: "{{ .Env.WINGMANS_TAP }}"
+
+    url_template: "https://github.com/{{ .Env.ORG }}/{{ .Env.REPO}}/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+
+    commit_author:
+      name: Wingmans Bot
+      email: wingmans-bot@wingmen.io
+
+    homepage: "https://github.com/wingmans/"
+
+    description: "policy CLI for building and managing authorization policies"
+
+    license: "Apache License Version 2.0"
+
+    skip_upload: false
+
+    test: |
+      system "#{bin}/policy version"
+
+    install: |
+      bin.install "policy"
