@@ -265,8 +265,39 @@ func IsExcluded(dir string, excludedRepos []string) bool {
 
 func IsGitRepo(dir string) bool {
 	gitDir := filepath.Join(dir, ".git")
-	_, err := os.Stat(gitDir)
-	return err == nil
+
+	// Check if .git is a directory
+	info, err := os.Stat(gitDir)
+	if err != nil || !info.IsDir() {
+		return false
+	}
+
+	// Check if CONFIG file exists
+	configFile := filepath.Join(gitDir, "CONFIG")
+	if _, err := os.Stat(configFile); err != nil {
+		return false
+	}
+
+	return true
+}
+
+func FindGitRoot(startDir string) string {
+	dir := startDir
+
+	for {
+		if IsGitRepo(dir) {
+			return dir
+		}
+
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			// Stop when reaching the root
+			break
+		}
+		dir = parent
+	}
+
+	return ""
 }
 
 func GitPull(dir string) error {
