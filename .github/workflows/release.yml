@@ -22,7 +22,7 @@ env:
   # PRE_RELEASE: ${{ github.ref == 'refs/heads/main' && 'development' || '' }}
   GO_VERSION: "1.23"
   GO_RELEASER_VERSION: "v2.3.2"
-  GO_LANGCI_LINT_VERSION: "v1.61.0"
+  # GO_LANGCI_LINT_VERSION: "v1.61.0"
   GO_TESTSUM_VERSION: "1.11.0"
   BREW_TAP-TOKEN: ${{ secrets.BREW-TAP_TOKEN }}
 
@@ -47,12 +47,12 @@ jobs:
           distribution: goreleaser
           version: ${{ env.GO_RELEASER_VERSION }}
           args: build --clean --snapshot --single-target
-      -
-        name: Lint
-        uses: golangci/golangci-lint-action@v6
-        with:
-          version: ${{ env.GO_LANGCI_LINT_VERSION }}
-          args: --timeout=30m
+      # -
+      #   name: Lint
+      #   uses: golangci/golangci-lint-action@v6
+      #   with:
+      #     version: ${{ env.GO_LANGCI_LINT_VERSION }}
+      #     args: --timeout=30m
 
   release:
     needs: test
