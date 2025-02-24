@@ -1,0 +1,94 @@
+# This is an example .goreleaser.yml file with some sensible defaults.
+# Make sure to check the documentation at https://goreleaser.com
+
+# The lines below are called `modelines`. See `:help modeline`
+# Feel free to remove those if you don't want/need to use them.
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+# vim: set ts=2 sw=2 tw=0 fo=cnqoj
+
+version: 2
+
+project_name: git-clone-org
+
+env:
+  # https://goreleaser.com/customization/env/
+  # - REGISTRY=ghcr.io
+  - ORG=wingmans
+  - REPO=git-clone-org
+  - DESCRIPTION="tool to clone all repositories from a github user or organization"
+  - LICENSE=Apache-2.0
+
+before:
+  hooks:
+    # You may remove this if you don't use go modules.
+    - go mod tidy
+
+builds:
+  # https://goreleaser.com/customization/build/
+  - id: build
+    main: "./cli/cmd/"
+    binary: git-clone-org
+    goos:
+      - darwin
+      - linux
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    env:
+      - CGO_ENABLED=0
+    ignore:
+      - goos: windows
+        goarch: arm64
+
+
+archives:
+  - format: tar.gz
+    # this name template makes the OS and Arch compatible with the results of `uname`.
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    # use zip for windows archives
+    format_overrides:
+      - goos: windows
+        format: zip
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+
+brews:
+  # https://goreleaser.com/customization/homebrew/
+  - name: git-clone-org
+
+    repository:
+      owner: "{{ .Env.ORG }}"
+      name: homebrew-tap
+      token: "{{ .Env.GITHUB_TOKEN }}"
+
+    url_template: "https://github.com/{{ .Env.ORG }}/{{ .Env.REPO}}/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+
+    commit_author:
+      name: Wingmans Bot
+      email: wingmans-bot@wingmen.io
+
+    homepage: "https://github.com/wingmans/"
+
+    description: "tool to clone all repositories from a gitbub organization or user"
+
+    license: "Apache License Version 2.0"
+
+    skip_upload: false
+
+    test: |
+      system "#{bin}/git-clone-org version"
+
+    install: |
+      bin.install "git-clone-org"
